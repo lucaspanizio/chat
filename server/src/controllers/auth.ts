@@ -1,5 +1,5 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
-import { validateCredentials } from '../services/auth.ts';
+import { USERS, validateCredentials } from '../services/auth.ts';
 import { generateToken } from '../utils/jwt.ts';
 
 interface LoginBody {
@@ -14,12 +14,18 @@ export async function loginHandler(request: FastifyRequest, reply: FastifyReply)
     return reply.status(400).send({ success: false, message: 'Usuário e senha são obrigatórios' });
   }
 
-  const isValid = validateCredentials(username, password);
+  const user = validateCredentials(username, password);
 
-  if (!isValid) {
+  if (!user) {
     return reply.status(401).send({ success: false, message: 'Usuário ou senha inválidos' });
   }
 
-  const token = generateToken({ username });
-  return reply.send({ success: true, token });
+  return reply.send({
+    success: true,
+    token: generateToken({ username }),
+    user: {
+      name: user.name,
+      username: user.username,
+    },
+  });
 }

@@ -3,10 +3,14 @@ import { Eye, EyeSlash } from 'phosphor-react';
 import { useNavigate } from '@tanstack/react-router';
 import { useFormLogin } from '@/hooks/use-form-login';
 import { useSignIn } from '@/services/api/resources/login';
+import { FormInput } from '@/pages/login/form-input';
+import { useStorage } from '@/hooks/use-storage';
 
 export function Login() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+
+  const { setStorage } = useStorage();
 
   const { signIn, isPending } = useSignIn();
 
@@ -16,7 +20,8 @@ export function Login() {
     signIn(formData, {
       onSuccess: (data) => {
         if (!data.success) return;
-        sessionStorage.setItem('@chat:token', data.token);
+        setStorage({ type: 'local', key: 'USER', value: data.user });
+        setStorage({ type: 'session', key: 'TOKEN', value: data.token });
         navigate({ to: '/' });
       },
       onError: (error) => {
@@ -39,19 +44,14 @@ export function Login() {
                 Usuário
               </label>
               <div className="relative group">
-                <input
+                <FormInput
+                  {...register('username')}
                   id="username"
                   type="text"
-                  disabled={isPending}
-                  {...register('username')}
                   autoComplete="new-username"
-                  placeholder={errors.username ?? 'Digite seu nome de usuário'}
-                  className={`w-full pr-10 rounded-md bg-[#2a3942] text-base text-white px-4 py-3 border placeholder:text-sm focus:outline-none caret-emerald-500
-                    ${
-                      errors.username
-                        ? 'border-red-500 placeholder:text-red-400 focus:ring-0'
-                        : 'border-[#3b4a54] placeholder:text-gray-400 focus:ring-1 focus:ring-emerald-500'
-                    }`}
+                  placeholder="Digite seu nome de usuário"
+                  disabled={isPending}
+                  error={errors.username}
                 />
               </div>
             </div>
@@ -61,19 +61,14 @@ export function Login() {
                 Senha
               </label>
               <div className="relative group">
-                <input
-                  id="password"
+                <FormInput
                   {...register('password')}
-                  disabled={isPending}
+                  id="password"
+                  type="text"
                   autoComplete="new-password"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder={errors.password ?? 'Digite sua senha'}
-                  className={`w-full pr-10 rounded-md bg-[#2a3942] text-base text-white px-4 py-3 border placeholder:text-sm focus:outline-none caret-emerald-500
-                    ${
-                      errors.password
-                        ? 'border-red-500 placeholder:text-red-400 focus:ring-0'
-                        : 'border-[#3b4a54] placeholder:text-gray-400 focus:ring-1 focus:ring-emerald-500'
-                    }`}
+                  placeholder="Digite sua senha"
+                  disabled={isPending}
+                  error={errors.password}
                 />
 
                 <button
